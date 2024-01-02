@@ -1,0 +1,44 @@
+{
+  "name": "@ocvlabs/smart-assets",
+  "version": "0.0.1",
+  "description": "Solidity Contract for Creating \"Digital Asset as a Smart Contract\"",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "files": [
+    "**/*.sol"
+  ],
+  "scripts": {
+    "test": "hardhat clean && hardhat test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ocvlabs/smart-assets.git"
+  },
+  "keywords": [
+    "smart",
+    "assets",
+    "NFT",
+    "smart",
+    "contracts"
+  ],
+  "author": "OnChainVision Labs <rald@ocvlabs.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ocvlabs/smart-assets/issues"
+  },
+  "homepage": "https://github.com/ocvlabs/smart-assets#readme",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-chai-matchers": "^2.0.3",
+    "@nomicfoundation/hardhat-ethers": "^3.0.4",
+    "@nomicfoundation/hardhat-foundry": "^1.1.1",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.3",
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "chai": "^4.2.0",
+    "ethers": "^6.7.1",
+    "hardhat": "^2.17.4",
+    "hardhat-gas-reporter": "^1.0.9",
+    "hardhat-ignore-warnings": "^0.2.0"
+  }
+}
