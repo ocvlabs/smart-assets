@@ -5,9 +5,11 @@ pragma solidity ^0.8.20;
 
 import {ISmartAsset} from "./ISmartAsset.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {SmartCodec} from "../smart-codec/SmartCodec.sol";
 
 abstract contract SmartAsset is ISmartAsset, Ownable {
-    string private _asset;
+    string private _name;
+    string private _data;
     string private _type;
 
     bool isPublic = false;
@@ -15,15 +17,17 @@ abstract contract SmartAsset is ISmartAsset, Ownable {
     mapping(address assetViewer => bool) private _hasAccess;
 
     constructor(
+        string memory assetName,
         string memory assetData,
-        bool isProcessed,
-        string memory assetType
+        string memory assetType,
+        bool isProcessed
     ) {
         if (isProcessed) {
-            _setAssetData(assetData, assetType);
+            _setAssetData(assetName, assetData, assetType);
         } else {
-            _processAssetData(assetData, assetType);
+            _processAssetData(assetName, assetData, assetType);
         }
+        updateAccess(msg.sender, true);
     }
 
     modifier hasAccess(address assetViewer) {
@@ -31,13 +35,41 @@ abstract contract SmartAsset is ISmartAsset, Ownable {
         _;
     }
 
-    function viewAsset()
+    function getAsset()
         external
+        view
+        hasAccess(msg.sender)
+        returns (
+            string memory assetName,
+            string memory assetData,
+            string memory assetType,
+            address assetCreator
+        )
+    {
+        return (viewName(), viewAsset(), viewType(), owner());
+    }
+
+    function viewAsset()
+        public
         view
         hasAccess(msg.sender)
         returns (string memory)
     {
-        return _asset;
+        string memory asset_ = SmartCodec.decode64(_data);
+        return (asset_);
+    }
+
+    function viewType()
+        public
+        view
+        hasAccess(msg.sender)
+        returns (string memory)
+    {
+        return _type;
+    }
+
+    function viewName() public view returns (string memory) {
+        return _name;
     }
 
     function batchUpdateAccess(
@@ -57,35 +89,42 @@ abstract contract SmartAsset is ISmartAsset, Ownable {
     }
 
     function updateAssetData(
+        string memory assetName,
         string memory assetData,
         string memory assetType,
         bool isProcessed
     ) external onlyOwner {
         if (isProcessed) {
-            _setAssetData(assetData, assetType);
+            _setAssetData(assetName, assetData, assetType);
         } else {
-            _processAssetData(assetData, assetType);
+            _processAssetData(assetName, assetData, assetType);
         }
     }
 
     function _setAssetData(
+        string memory assetName,
         string memory assetData,
         string memory assetType
     ) internal {
-        _asset = assetData;
+        _name = assetName;
+        _data = assetData;
         _type = assetType;
     }
 
     function _processAssetData(
+        string memory assetName,
         string memory assetData,
         string memory assetType
     ) internal {
-        // run data processor
-        string memory processedData = assetData;
-        _setAssetData(processedData, assetType);
+        string memory processedData = SmartCodec.encode64(assetData);
+        _setAssetData(assetName, processedData, assetType);
     }
 
     function _checkAccess(address viewer) internal view returns (bool) {
-        return _hasAccess[viewer];
+        if (isPublic) {
+            return true;
+        } else {
+            return _hasAccess[viewer];
+        }
     }
 }
