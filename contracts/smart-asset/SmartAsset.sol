@@ -12,7 +12,10 @@ abstract contract SmartAsset is ISmartAsset, Ownable {
     string private _data;
     string private _type;
 
-    bool isPublic = false;
+    bool _isPublic = false;
+
+    error NoAccess(address viewer);
+    event AssetUpdated(address owner);
 
     mapping(address assetViewer => bool) private _hasAccess;
 
@@ -81,6 +84,10 @@ abstract contract SmartAsset is ISmartAsset, Ownable {
         }
     }
 
+    function updateVisibility(bool isPublic) public onlyOwner {
+        _isPublic = isPublic;
+    }
+
     function updateAccess(
         address assetViewer,
         bool hasAccess_
@@ -109,6 +116,7 @@ abstract contract SmartAsset is ISmartAsset, Ownable {
         _name = assetName;
         _data = assetData;
         _type = assetType;
+        emit AssetUpdated(msg.sender);
     }
 
     function _processAssetData(
@@ -121,10 +129,14 @@ abstract contract SmartAsset is ISmartAsset, Ownable {
     }
 
     function _checkAccess(address viewer) internal view returns (bool) {
-        if (isPublic) {
+        if (_isPublic) {
             return true;
         } else {
-            return _hasAccess[viewer];
+            if (_hasAccess[viewer]) {
+                return true;
+            } else {
+                revert NoAccess(msg.sender);
+            }
         }
     }
 }
