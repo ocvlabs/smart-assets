@@ -8,13 +8,10 @@ interface IInteractiveAsset {
         external
         view
         returns (
+            string memory,
             address styleAddress,
             address bodyAddress,
             address settingAddress,
             address scriptAddress
         );
-
-    function viewAsset() external view returns (string memory);
-
-    function viewType() external view returns (string memory);
 }
