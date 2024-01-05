@@ -7,7 +7,7 @@ import {ISmartAsset} from "./ISmartAsset.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {SmartCodec} from "../smart-codec/SmartCodec.sol";
 
-contract PermissionedSmartAsset is ISmartAsset, Ownable {
+abstract contract PermissionedSmartAsset is ISmartAsset, Ownable {
     string private _name;
     string private _data;
     string private _type;

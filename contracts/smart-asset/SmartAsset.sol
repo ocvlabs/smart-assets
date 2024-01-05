@@ -34,7 +34,7 @@ contract SmartAsset is ISmartAsset, Ownable {
         _registry = registry;
     }
 
-    function getAsset()
+    function getAssetData()
         external
         view
         returns (
