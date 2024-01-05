@@ -58,6 +58,31 @@ library SmartCodec {
             );
     }
 
+    function encodeMetadata(
+        string memory name,
+        string memory description,
+        string memory image,
+        string memory animation,
+        string memory attributes
+    ) external pure returns (string memory) {
+        return
+            string(
+                abi.encodePacked(
+                    '{"name":"',
+                    name,
+                    '", "description":"',
+                    description,
+                    '", "image": "',
+                    image,
+                    '", "animation_url": "',
+                    animation,
+                    '", "attributes": [{',
+                    attributes,
+                    "}]}"
+                )
+            );
+    }
+
     function encodeMarkup(
         string memory title,
         string memory style,
