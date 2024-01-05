@@ -49,7 +49,7 @@ contract SmartAsset is ISmartAsset, Ownable {
 
     function viewAsset() public view returns (string memory) {
         string memory asset_ = SmartCodec.decode64(_data);
-        return (asset_);
+        return asset_;
     }
 
     function viewType() public view returns (string memory) {

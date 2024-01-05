@@ -1,16 +1,19 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.9;
 
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {SmartAsset} from "../smart-asset/SmartAsset.sol";
 import {InteractiveAsset} from "./InteractiveAsset.sol";
+import {IAssetFactory} from "./IAssetFactory.sol";
 
 /// @title Register
 contract AssetRegistry {
+    address _tokenFactory;
     mapping(address assetAddress => bool) hasSetup;
 
     // map all compiled smart assets to used asset
     mapping(address interactiveSmartAssets => mapping(string smartAssets => address assetAddress))
-        private _interactives;
+        private _compositions;
 
     struct AssetData {
         address _creator;
@@ -21,14 +24,17 @@ contract AssetRegistry {
         uint256 _mintLimit; // @note max mint per wallet
     }
 
-    mapping(address interactives => AssetData) private _assetData;
-    mapping(address interactives => address) private _creators;
-    mapping(address interactives => address) private _collectors;
+    mapping(address interactiveTokens => AssetData) private _assetData;
+    mapping(address interactiveTokens => address) private _creators;
+    mapping(address interactiveTokens => uint256) private _mintedSupply;
+    mapping(address interactiveTokens => address) private _collectors;
     mapping(address creators => address[]) private _deployments;
+    mapping(address collector => mapping(address assetAddress => uint256))
+        private _tokenAmountMinted;
 
-    mapping(address collector => uint256) private _tokenAmountMinted;
-
-    constructor() {}
+    constructor(address tokenFactory) {
+        _tokenFactory = tokenFactory;
+    }
 
     modifier onlyCreator(address assetAddress) {
         _isCreator(assetAddress);
@@ -83,6 +89,7 @@ contract AssetRegistry {
 
         // compose smart assets into one interactive asset
         InteractiveAsset newInteractives = new InteractiveAsset(
+            assetName,
             msg.sender,
             address(style_),
             address(body_),
@@ -98,11 +105,11 @@ contract AssetRegistry {
         _assetData[address(newInteractives)]._assetType = assetType;
         _assetData[address(newInteractives)]._assetName = assetName;
 
-        // record smart assets on mapping
-        _interactives[address(newInteractives)]["style"] = address(style_);
-        _interactives[address(newInteractives)]["body"] = address(body_);
-        _interactives[address(newInteractives)]["setting"] = address(setting_);
-        _interactives[address(newInteractives)]["script"] = address(script_);
+        // record smart asset compositions on mapping
+        _compositions[address(newInteractives)]["style"] = address(style_);
+        _compositions[address(newInteractives)]["body"] = address(body_);
+        _compositions[address(newInteractives)]["setting"] = address(setting_);
+        _compositions[address(newInteractives)]["script"] = address(script_);
     }
 
     function setupAsset(
@@ -119,31 +126,84 @@ contract AssetRegistry {
 
     function mintAsset(
         address assetAddress,
-        address receiverAddress,
-        uint256 tokenAmount
-    ) public {
+        address receiver, // @note user's address where token will be dropped
+        uint256 tokenQuantity
+    ) public returns (uint256[] memory) {
         require(hasSetup[assetAddress], "Asset Not Setup Yet");
-        // check if tokenAmount is valid
-        // check if payment is sufficient
+        require(tokenQuantity > 0, "Token amount must be greater than zero");
+        require(
+            _hasSupply(assetAddress, tokenQuantity),
+            "Token Quantity will exceed max supply"
+        );
+        require(
+            !_hasMintedMax(receiver, assetAddress, tokenQuantity),
+            "Receiver already received max token per wallet"
+        );
 
-        // mint token to factory using assetAddress and receiverAddress
+        uint256[] memory newTokenIDs = new uint256[](tokenQuantity);
+
+        for (uint256 i = 0; i < tokenQuantity; i++) {
+            // Mint token to factory using assetAddress and receiverAddress
+            uint256 tokenId = IAssetFactory(_tokenFactory).mintAsset(
+                receiver,
+                assetAddress
+            );
+            newTokenIDs[i] = tokenId;
+            _mintedSupply[assetAddress] = tokenId;
+            _collectors[assetAddress] = receiver;
+            _tokenAmountMinted[receiver][assetAddress] += 1;
+        }
+
+        return newTokenIDs;
     }
 
-    function viewComposition(
+    function getComposition(
         address assetAddress
     )
         public
         view
         returns (
+            string memory assetName,
             address styleAddress,
             address bodyAddress,
             address settingAddress,
             address scriptAddress
         )
     {
-        styleAddress = _interactives[assetAddress]["style"];
-        bodyAddress = _interactives[assetAddress]["body"];
-        settingAddress = _interactives[assetAddress]["setting"];
-        scriptAddress = _interactives[assetAddress]["script"];
+        return InteractiveAsset(assetAddress).getComposition();
+    }
+
+    function addComposition(
+        address assetAddress,
+        string memory assetType,
+        address compositionAddress
+    ) public onlyCreator(assetAddress) {
+        _compositions[assetAddress][assetType] = compositionAddress;
+    }
+
+    function viewComposition(
+        address assetAddress,
+        string memory assetType
+    ) public view returns (address) {
+        return _compositions[assetAddress][assetType];
+    }
+
+    function _hasMintedMax(
+        address userAddress,
+        address assetAddress,
+        uint256 toMintQuantity
+    ) public view returns (bool) {
+        uint256 mintedToken = _tokenAmountMinted[userAddress][assetAddress];
+        uint256 maxLimit = _assetData[assetAddress]._mintLimit;
+        return (mintedToken + toMintQuantity) <= maxLimit;
+    }
+
+    function _hasSupply(
+        address assetAddress,
+        uint256 toMintQuantity
+    ) public view returns (bool) {
+        uint256 mintedSupply = (_mintedSupply[assetAddress] + 1);
+        uint256 maxSupply = _assetData[assetAddress]._maxSupply;
+        return (mintedSupply + toMintQuantity) <= maxSupply;
     }
 }
