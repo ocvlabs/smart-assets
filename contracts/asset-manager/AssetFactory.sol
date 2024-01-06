@@ -10,7 +10,7 @@ import {IInteractiveAsset} from "../interfaces/IInteractiveAsset.sol";
 
 pragma solidity ^0.8.19;
 
-/// @title Interactive Asset Factory
+/// @title Collection of Interactive Assets
 contract InteractiveAsset is
     ERC721("Interactive NFT", "iNFT"),
     Ownable(msg.sender),
@@ -28,10 +28,6 @@ contract InteractiveAsset is
         _safeMint(receiver, tokenIds);
         tokenIds++;
         return newTokenID;
-    }
-
-    function _linkAsset(uint256 tokenId, address assetAddress) internal {
-        _assetAddresses[tokenId] = assetAddress;
     }
 
     function contractURI() external pure returns (string memory) {
@@ -79,10 +75,8 @@ contract InteractiveAsset is
             );
     }
 
-    function recover() public {
-        uint amount = address(this).balance;
-        (bool success, ) = owner().call{value: amount}("");
-        require(success, "Failed to send Ether");
+    function _linkAsset(uint256 tokenId, address assetAddress) internal {
+        _assetAddresses[tokenId] = assetAddress;
     }
 
     function _generateMarkup(
@@ -106,5 +100,11 @@ contract InteractiveAsset is
         );
 
         return markup;
+    }
+
+    function recover() public {
+        uint amount = address(this).balance;
+        (bool success, ) = owner().call{value: amount}("");
+        require(success, "Failed to send Ether");
     }
 }

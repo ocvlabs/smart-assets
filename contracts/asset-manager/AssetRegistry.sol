@@ -4,10 +4,10 @@ pragma solidity ^0.8.9;
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {SmartAsset} from "../smart-asset/SmartAsset.sol";
 import {InteractiveAsset} from "../interactive-asset/InteractiveAsset.sol";
-import {IAssetFactory} from "./IAssetFactory.sol";
+import {ITokenFactory} from "./ITokenFactory.sol";
 
 /// @title Register
-contract AssetRegistry {
+contract AssetRegistry is Ownable(msg.sender) {
     address _tokenFactory;
     mapping(address assetAddress => bool) hasSetup;
 
@@ -19,7 +19,7 @@ contract AssetRegistry {
         address _creator;
         string _assetType;
         string _assetName;
-        uint256 _mintPrice;
+        uint256 _mintPrice; // @note price in wei
         uint256 _maxSupply;
         uint256 _mintLimit; // @note max mint per wallet
     }
@@ -42,7 +42,7 @@ contract AssetRegistry {
     }
 
     function _isCreator(address assetAddress) internal view returns (bool) {
-        return _creators[assetAddress] == msg.sender;
+        return _creators[assetAddress] == msg.sender || owner() == msg.sender;
     }
 
     function deployAsset(
@@ -128,7 +128,7 @@ contract AssetRegistry {
         address assetAddress,
         address receiver, // @note user's address where token will be dropped
         uint256 tokenQuantity
-    ) public returns (uint256[] memory) {
+    ) public payable returns (uint256[] memory) {
         require(hasSetup[assetAddress], "Asset Not Setup Yet");
         require(tokenQuantity > 0, "Token amount must be greater than zero");
         require(
@@ -139,12 +139,16 @@ contract AssetRegistry {
             !_hasMintedMax(receiver, assetAddress, tokenQuantity),
             "Receiver already received max token per wallet"
         );
+        require(
+            (tokenQuantity * _assetData[assetAddress]._mintPrice) >= msg.value,
+            "Receiver already received max token per wallet"
+        );
 
         uint256[] memory newTokenIDs = new uint256[](tokenQuantity);
 
         for (uint256 i = 0; i < tokenQuantity; i++) {
             // Mint token to factory using assetAddress and receiverAddress
-            uint256 tokenId = IAssetFactory(_tokenFactory).mintAsset(
+            uint256 tokenId = ITokenFactory(_tokenFactory).mintAsset(
                 receiver,
                 assetAddress
             );
@@ -205,5 +209,11 @@ contract AssetRegistry {
         uint256 mintedSupply = (_mintedSupply[assetAddress] + 1);
         uint256 maxSupply = _assetData[assetAddress]._maxSupply;
         return (mintedSupply + toMintQuantity) <= maxSupply;
+    }
+
+    function recover() public {
+        uint amount = address(this).balance;
+        (bool success, ) = owner().call{value: amount}("");
+        require(success, "Failed to send Ether");
     }
 }
