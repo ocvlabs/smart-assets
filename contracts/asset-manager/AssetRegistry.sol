@@ -7,7 +7,7 @@ import {InteractiveAsset} from "../interactive-asset/InteractiveAsset.sol";
 import {ITokenFactory} from "./ITokenFactory.sol";
 
 /// @title Register
-contract AssetRegistry is Ownable(msg.sender) {
+contract AssetRegistry is Ownable {
     address _tokenFactory;
     mapping(address assetAddress => bool) hasSetup;
 
@@ -32,7 +32,7 @@ contract AssetRegistry is Ownable(msg.sender) {
     mapping(address collector => mapping(address assetAddress => uint256))
         private _tokenAmountMinted;
 
-    constructor(address tokenFactory) {
+    constructor(address controller, address tokenFactory) Ownable(controller) {
         _tokenFactory = tokenFactory;
     }
 

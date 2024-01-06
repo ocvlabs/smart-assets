@@ -11,7 +11,7 @@ import {IInteractiveAsset} from "../interfaces/IInteractiveAsset.sol";
 pragma solidity ^0.8.19;
 
 /// @title Collection of Interactive Assets
-contract InteractiveAsset is
+contract TokenFactory is
     ERC721("Interactive NFT", "iNFT"),
     Ownable(msg.sender),
     ITokenFactory
