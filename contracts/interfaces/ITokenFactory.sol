@@ -3,4 +3,4 @@
 
 pragma solidity ^0.8.20;
 
-import {IAssetFactory} from "../interactive-asset/IAssetFactory.sol";
+import {ITokenFactory} from "../asset-manager/ITokenFactory.sol";

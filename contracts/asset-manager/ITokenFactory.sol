@@ -3,7 +3,7 @@
 
 pragma solidity ^0.8.20;
 
-interface IAssetFactory {
+interface ITokenFactory {
     function mintAsset(
         address receiver,
         address assetAddress

@@ -5,16 +5,16 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {SmartCodec} from "../smart-codec/SmartCodec.sol";
 import {ISmartAsset} from "../interfaces/ISmartAsset.sol";
-import {IAssetFactory} from "./IAssetFactory.sol";
-import {IInteractiveAsset} from "./IInteractiveAsset.sol";
+import {ITokenFactory} from "../interfaces/ITokenFactory.sol";
+import {IInteractiveAsset} from "../interfaces/IInteractiveAsset.sol";
 
 pragma solidity ^0.8.19;
 
 /// @title Interactive Asset Factory
-contract InteractiveAssetCollection is
+contract InteractiveAsset is
     ERC721("Interactive NFT", "iNFT"),
     Ownable(msg.sender),
-    IAssetFactory
+    ITokenFactory
 {
     uint256 tokenIds;
     mapping(uint256 tokenId => address) _assetAddresses;

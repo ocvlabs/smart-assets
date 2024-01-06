@@ -3,7 +3,7 @@ pragma solidity ^0.8.9;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {SmartAsset} from "../smart-asset/SmartAsset.sol";
-import {InteractiveAsset} from "./InteractiveAsset.sol";
+import {InteractiveAsset} from "../interactive-asset/InteractiveAsset.sol";
 import {IAssetFactory} from "./IAssetFactory.sol";
 
 /// @title Register
