@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 // OnChainVision Contracts
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {SmartCodec} from "../smart-codec/SmartCodec.sol";
 import {ISmartAsset} from "../interfaces/ISmartAsset.sol";
@@ -13,6 +14,7 @@ pragma solidity ^0.8.19;
 /// @title Collection of Interactive Assets
 contract SmartToken is ERC721 {
     address public _assetAddress;
+    address public _thumbnailAddress;
 
     constructor(
         string memory name,
@@ -34,7 +36,9 @@ contract SmartToken is ERC721 {
         // Create an instance of ISmartAsset with the contract address
         IInteractiveAsset interactives = IInteractiveAsset(assetAddress);
 
-        string memory thumbnail = "";
+        // retrieve thumbnail
+        string memory thumbnail_ = ISmartAsset(_thumbnailAddress).viewAsset();
+        string memory thumbnail = SmartCodec.encodeSvg64(thumbnail_);
         string memory attributes = "";
 
         (
@@ -46,7 +50,7 @@ contract SmartToken is ERC721 {
         ) = interactives.getComposition();
 
         string memory assetName_ = string(
-            abi.encodePacked(assetName, "#", assetId)
+            abi.encodePacked(assetName, " #", Strings.toString(assetId))
         );
 
         // load all asset data
@@ -63,7 +67,7 @@ contract SmartToken is ERC721 {
             SmartCodec.encodeJson64(
                 SmartCodec.encodeMetadata(
                     assetName_,
-                    "Powered by OCVLabs",
+                    "Powered by OnChainVision",
                     thumbnail,
                     markup,
                     attributes
@@ -92,5 +96,9 @@ contract SmartToken is ERC721 {
         );
 
         return markup;
+    }
+
+    function updateThumbnail(address thumbnailAddress) public {
+        _thumbnailAddress = thumbnailAddress;
     }
 }

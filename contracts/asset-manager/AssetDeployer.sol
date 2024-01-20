@@ -33,7 +33,38 @@ contract AssetDeployer is Ownable {
         return _deployers[assetAddress] == msg.sender || owner() == msg.sender;
     }
 
-    function deployAsset(
+    function inscribeSmartAsset(
+        address assetAddress,
+        string memory assetData,
+        string memory assetType,
+        bool isEncoded
+    ) public payable {
+        // deploy smart asset
+        address newAsset = deploySmartAsset(assetData, assetType, isEncoded);
+        // record smart asset compositions
+        _compositions[assetAddress][assetType] = address(newAsset);
+    }
+
+    function deploySmartAsset(
+        string memory assetData,
+        string memory assetType,
+        bool isEncoded
+    ) public payable returns (address assetAddress) {
+        SmartAsset newAsset = new SmartAsset(
+            address(this),
+            msg.sender,
+            "Smart Asset",
+            assetData,
+            assetType,
+            isEncoded
+        );
+        _deployments[msg.sender].push(address(newAsset));
+        _deployers[address(newAsset)] = msg.sender;
+
+        assetAddress = address(newAsset);
+    }
+
+    function deployInteractiveAsset(
         string memory assetName,
         string memory assetType, // @note (e.g., game)
         string memory style,
@@ -129,6 +160,19 @@ contract AssetDeployer is Ownable {
         string memory assetType
     ) public view returns (address) {
         return _compositions[assetAddress][assetType];
+    }
+
+    function getDeployments(
+        address creatorAddress
+    ) public view returns (address[] memory) {
+        return _deployments[creatorAddress];
+    }
+
+    function getDeploymentsByIndex(
+        address creatorAddress,
+        uint256 index
+    ) public view returns (address) {
+        return _deployments[creatorAddress][index];
     }
 
     function recover() public {

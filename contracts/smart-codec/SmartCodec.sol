@@ -63,9 +63,9 @@ library SmartCodec {
                     image,
                     '", "animation_url": "',
                     animation,
-                    '", "attributes": [{',
+                    '", "attributes": [',
                     attributes,
-                    "}]}"
+                    "]}"
                 )
             );
     }
