@@ -8,7 +8,7 @@ import {ISmartAsset} from "../interfaces/ISmartAsset.sol";
 import {ITokenFactory} from "../interfaces/ITokenFactory.sol";
 import {IInteractiveAsset} from "../interfaces/IInteractiveAsset.sol";
 
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.20;
 
 /// @title Collection of Interactive Assets
 contract TokenFactory is
@@ -67,7 +67,7 @@ contract TokenFactory is
             SmartCodec.encodeJson64(
                 SmartCodec.encodeMetadata(
                     assetName,
-                    "Powered by OCVLabs",
+                    "Powered by OnChainVision",
                     thumbnail,
                     markup,
                     attributes

@@ -1,5 +1,7 @@
-// SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.9;
+// SPDX-License-Identifier: MIT
+// OnChainVision Contracts
+
+pragma solidity ^0.8.20;
 
 import "./IInteractiveAsset.sol";
 

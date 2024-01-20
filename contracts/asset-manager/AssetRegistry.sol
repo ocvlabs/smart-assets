@@ -1,10 +1,12 @@
-// SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.9;
+// SPDX-License-Identifier: MIT
+// OnChainVision Contracts
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {SmartAsset} from "../smart-asset/SmartAsset.sol";
 import {InteractiveAsset} from "../interactive-asset/InteractiveAsset.sol";
 import {ITokenFactory} from "./ITokenFactory.sol";
+
+pragma solidity ^0.8.20;
 
 /// @title Register
 contract AssetRegistry is Ownable {
