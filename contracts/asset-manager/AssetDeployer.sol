@@ -9,6 +9,9 @@ import {InteractiveAsset} from "../interactive-asset/InteractiveAsset.sol";
 
 /// @title Deploy Asset Data as Smart Contracts
 contract AssetDeployer is Ownable {
+    uint256 _inscribeFee;
+    uint256 _deployFee;
+
     mapping(address assetAddress => bool) hasSetup;
 
     struct AssetData {
@@ -22,7 +25,10 @@ contract AssetDeployer is Ownable {
     mapping(address interactiveSmartAssets => mapping(string smartAssets => address assetAddress))
         private _compositions;
 
-    constructor(address controller) Ownable(controller) {}
+    constructor(address controller) Ownable(controller) {
+        _inscribeFee = 0;
+        _deployFee = 0;
+    }
 
     modifier onlyDeployer(address assetAddress) {
         _isDeployer(assetAddress);
@@ -33,12 +39,21 @@ contract AssetDeployer is Ownable {
         return _deployers[assetAddress] == msg.sender || owner() == msg.sender;
     }
 
+    function setServiceFees(
+        uint256 inscribeFee,
+        uint256 deployFee
+    ) public payable onlyOwner {
+        _inscribeFee = inscribeFee;
+        _deployFee = deployFee;
+    }
+
     function inscribeSmartAsset(
         address assetAddress,
         string memory assetData,
         string memory assetType,
         bool isEncoded
-    ) public payable {
+    ) public payable onlyDeployer(assetAddress) {
+        require(msg.value >= _inscribeFee, "Payment not enough");
         // deploy smart asset
         address newAsset = deploySmartAsset(assetData, assetType, isEncoded);
         // record smart asset compositions
@@ -73,6 +88,7 @@ contract AssetDeployer is Ownable {
         string memory script,
         bool isEncoded
     ) public payable {
+        require(msg.value >= _deployFee, "Payment not enough");
         SmartAsset style_ = new SmartAsset(
             address(this),
             msg.sender,
