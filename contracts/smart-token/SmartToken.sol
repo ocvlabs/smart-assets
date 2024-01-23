@@ -13,15 +13,18 @@ pragma solidity ^0.8.19;
 
 /// @title Collection of Interactive Assets
 contract SmartToken is ERC721 {
+    address private _controller;
     address public _assetAddress;
     address public _thumbnailAddress;
 
     constructor(
         string memory name,
         string memory symbol,
-        address assetAddress
+        address assetAddress,
+        address controller
     ) ERC721(name, symbol) {
         _assetAddress = assetAddress;
+        _controller = controller;
     }
 
     function contractURI() external pure returns (string memory) {
@@ -99,6 +102,12 @@ contract SmartToken is ERC721 {
     }
 
     function updateThumbnail(address thumbnailAddress) public {
+        require(_controller == msg.sender, "Not authorized");
         _thumbnailAddress = thumbnailAddress;
+    }
+
+    function updateController(address newAddress) public {
+        require(_controller == msg.sender, "Not authorized");
+        _controller = newAddress;
     }
 }
