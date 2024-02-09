@@ -14,4 +14,6 @@ interface IInteractiveAsset {
             address settingAddress,
             address scriptAddress
         );
+
+    function viewAsset() external view returns (string memory);
 }

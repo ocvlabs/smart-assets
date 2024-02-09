@@ -3,20 +3,18 @@
 
 pragma solidity ^0.8.20;
 
-import {ISmartAsset} from "./ISmartAsset.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {SmartCodec} from "../smart-codec/SmartCodec.sol";
+import {ISmartAsset} from "./ISmartAsset.sol";
 
 contract SmartAsset is ISmartAsset, Ownable {
+    address public _registry;
+
     string private _name;
     string private _data;
     string private _type;
 
-    address public _registry;
-
     event AssetUpdated(address owner);
-
-    mapping(address assetViewer => bool) private _hasAccess;
 
     constructor(
         address registry,
@@ -26,12 +24,12 @@ contract SmartAsset is ISmartAsset, Ownable {
         string memory assetType,
         bool isEncoded
     ) Ownable(creator) {
-        if (isEncoded) {
-            _setAssetData(assetName, assetData, assetType);
-        } else {
-            _processAssetData(assetName, assetData, assetType);
-        }
         _registry = registry;
+        if (isEncoded) {
+            _setup(assetName, assetData, assetType);
+        } else {
+            _process(assetName, assetData, assetType);
+        }
     }
 
     function getAssetData()
@@ -48,8 +46,8 @@ contract SmartAsset is ISmartAsset, Ownable {
     }
 
     function viewAsset() public view returns (string memory) {
-        string memory asset_ = SmartCodec.decode64(_data);
-        return asset_;
+        string memory asset = SmartCodec.decode64(_data);
+        return asset;
     }
 
     function viewType() public view returns (string memory) {
@@ -60,20 +58,24 @@ contract SmartAsset is ISmartAsset, Ownable {
         return _name;
     }
 
-    function updateAssetData(
+    function viewRegistry() public view returns (address) {
+        return _registry;
+    }
+
+    function update(
         string memory assetName,
         string memory assetData,
         string memory assetType,
         bool isEncoded
     ) external onlyOwner {
         if (isEncoded) {
-            _setAssetData(assetName, assetData, assetType);
+            _setup(assetName, assetData, assetType);
         } else {
-            _processAssetData(assetName, assetData, assetType);
+            _process(assetName, assetData, assetType);
         }
     }
 
-    function _setAssetData(
+    function _setup(
         string memory assetName,
         string memory assetData,
         string memory assetType
@@ -84,12 +86,12 @@ contract SmartAsset is ISmartAsset, Ownable {
         emit AssetUpdated(msg.sender);
     }
 
-    function _processAssetData(
+    function _process(
         string memory assetName,
         string memory assetData,
         string memory assetType
     ) internal {
         string memory processedData = SmartCodec.encode64(assetData);
-        _setAssetData(assetName, processedData, assetType);
+        _setup(assetName, processedData, assetType);
     }
 }
