@@ -16,6 +16,7 @@ contract SmartToken is ERC721, Ownable {
     address public _assetAddress;
     address public _imageAddress;
     string public _contractURI;
+    string public _tokenName;
 
     uint256 public _tokenId = 0;
     uint256 public _maxSupply;
@@ -33,6 +34,7 @@ contract SmartToken is ERC721, Ownable {
         address assetAddress,
         address imageAddress
     ) ERC721(name, symbol) Ownable(controller) {
+        _tokenName = name;
         _registry = registry;
         _controller = controller;
         _maxSupply = maxSupply;
@@ -80,13 +82,9 @@ contract SmartToken is ERC721, Ownable {
         uint256 tokenId
     ) public view override returns (string memory) {
         string memory image = ISmartAsset(_imageAddress).viewAsset();
-        IInteractiveAsset interactives = IInteractiveAsset(_assetAddress);
-        (string memory assetName, , , , ) = interactives.getComposition();
-
         string memory name = string(
-            abi.encodePacked(assetName, " #", Strings.toString(tokenId))
+            abi.encodePacked(_tokenName, " #", Strings.toString(tokenId))
         );
-
         string memory animation = IInteractiveAsset(_assetAddress).viewAsset();
 
         return
