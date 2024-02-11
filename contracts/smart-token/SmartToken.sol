@@ -1,113 +1,72 @@
 // SPDX-License-Identifier: MIT
 // OnChainVision Contracts
 
-import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {IInteractiveAsset} from "../interactive-asset/IInteractiveAsset.sol";
+import {ISmartAsset} from "../smart-asset/ISmartAsset.sol";
 import {SmartCodec} from "../smart-codec/SmartCodec.sol";
-import {ISmartAsset} from "../interfaces/ISmartAsset.sol";
-import {ITokenFactory} from "../interfaces/ITokenFactory.sol";
-import {IInteractiveAsset} from "../interfaces/IInteractiveAsset.sol";
+import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
-pragma solidity ^0.8.19;
+pragma solidity 0.8.20;
 
-/// @title Collection of Interactive Assets
-contract SmartToken is ERC721 {
-    address private _controller;
+contract SmartToken is ERC721, Ownable {
+    address public _registry;
+    address public _controller;
     address public _assetAddress;
     address public _thumbnailAddress;
+
+    string private _contractURI;
+    uint256 _maxSupply;
 
     constructor(
         string memory name,
         string memory symbol,
-        address assetAddress,
+        uint256 maxSupply,
+        address registry,
         address controller
-    ) ERC721(name, symbol) {
-        _assetAddress = assetAddress;
+    ) ERC721(name, symbol) Ownable(controller) {
+        _registry = registry;
         _controller = controller;
+        _maxSupply = maxSupply;
     }
 
-    function contractURI() external pure returns (string memory) {
-        return SmartCodec.encodeJson64("");
+    function contractURI() external view returns (string memory) {
+        return SmartCodec.encodeJson64(_contractURI);
     }
 
     function tokenURI(
-        uint256 assetId
+        uint256 tokenId
     ) public view override returns (string memory) {
-        address assetAddress = _assetAddress;
-
-        // Create an instance of ISmartAsset with the contract address
-        IInteractiveAsset interactives = IInteractiveAsset(assetAddress);
-
-        // retrieve thumbnail
-        string memory thumbnail_ = ISmartAsset(_thumbnailAddress).viewAsset();
-        string memory thumbnail = SmartCodec.encodeSvg64(thumbnail_);
-        string memory attributes = "";
-
-        (
-            string memory assetName,
-            address styleAddress,
-            address bodyAddress,
-            address settingAddress,
-            address scriptAddress
-        ) = interactives.getComposition();
+        string memory image = ISmartAsset(_thumbnailAddress).viewAsset();
+        IInteractiveAsset interactives = IInteractiveAsset(_assetAddress);
+        (string memory assetName, , , , ) = interactives.getComposition();
 
         string memory assetName_ = string(
-            abi.encodePacked(assetName, " #", Strings.toString(assetId))
+            abi.encodePacked(assetName, " #", Strings.toString(tokenId))
         );
 
-        // load all asset data
-
-        string memory markup = _generateMarkup(
-            assetName,
-            styleAddress,
-            bodyAddress,
-            settingAddress,
-            scriptAddress
-        );
+        string memory animation = IInteractiveAsset(_assetAddress).viewAsset();
 
         return
             SmartCodec.encodeJson64(
                 SmartCodec.encodeMetadata(
                     assetName_,
                     "Powered by OnChainVision",
-                    thumbnail,
-                    markup,
-                    attributes
+                    image,
+                    animation,
+                    ""
                 )
             );
-    }
-
-    function _generateMarkup(
-        string memory assetName,
-        address styleAddress,
-        address bodyAddress,
-        address settingAddress,
-        address scriptAddress
-    ) internal view returns (string memory) {
-        string memory style = ISmartAsset(styleAddress).viewAsset();
-        string memory body = ISmartAsset(bodyAddress).viewAsset();
-        string memory setting = ISmartAsset(settingAddress).viewAsset();
-        string memory script = ISmartAsset(scriptAddress).viewAsset();
-
-        string memory markup = SmartCodec.encodeMarkup64(
-            assetName,
-            style,
-            body,
-            setting,
-            script
-        );
-
-        return markup;
-    }
-
-    function updateThumbnail(address thumbnailAddress) public {
-        require(_controller == msg.sender, "Not authorized");
-        _thumbnailAddress = thumbnailAddress;
     }
 
     function updateController(address newAddress) public {
         require(_controller == msg.sender, "Not authorized");
         _controller = newAddress;
+    }
+
+    function updateContractURI(string memory uri) public {
+        require(_controller == msg.sender, "Not authorized");
+        _contractURI = uri;
     }
 }
