@@ -17,7 +17,7 @@ contract SmartToken is ERC721, Ownable {
     address public _imageAddress;
     string public _contractURI;
 
-    uint256 public _tokenId;
+    uint256 public _tokenId = 0;
     uint256 public _maxSupply;
     uint256 public _mintPrice;
 
@@ -39,6 +39,9 @@ contract SmartToken is ERC721, Ownable {
         _mintPrice = mintPrice;
         _assetAddress = assetAddress;
         _imageAddress = imageAddress;
+
+        // mint token zero
+        _safeMint(controller, _tokenId);
     }
 
     function contractURI() external view returns (string memory) {
@@ -66,9 +69,9 @@ contract SmartToken is ERC721, Ownable {
             "Royalties and payment sent"
         );
         for (uint256 i = 0; i < qty; i++) {
+            _tokenId++;
             _safeMint(receiver, _tokenId);
             emit TokenMinted(receiver, _tokenId);
-            _tokenId++;
         }
         return true;
     }
