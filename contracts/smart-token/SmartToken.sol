@@ -14,7 +14,7 @@ contract SmartToken is ERC721, Ownable {
     address public _registry;
     address public _controller;
     address public _assetAddress;
-    address public _thumbnailAddress;
+    address public _imageAddress;
 
     string private _contractURI;
     uint256 _maxSupply;
@@ -24,11 +24,15 @@ contract SmartToken is ERC721, Ownable {
         string memory symbol,
         uint256 maxSupply,
         address registry,
-        address controller
+        address controller,
+        address assetAddress,
+        address imageAddress
     ) ERC721(name, symbol) Ownable(controller) {
         _registry = registry;
         _controller = controller;
         _maxSupply = maxSupply;
+        _assetAddress = assetAddress;
+        _imageAddress = imageAddress;
     }
 
     function contractURI() external view returns (string memory) {
@@ -38,11 +42,11 @@ contract SmartToken is ERC721, Ownable {
     function tokenURI(
         uint256 tokenId
     ) public view override returns (string memory) {
-        string memory image = ISmartAsset(_thumbnailAddress).viewAsset();
+        string memory image = ISmartAsset(_imageAddress).viewAsset();
         IInteractiveAsset interactives = IInteractiveAsset(_assetAddress);
         (string memory assetName, , , , ) = interactives.getComposition();
 
-        string memory assetName_ = string(
+        string memory name = string(
             abi.encodePacked(assetName, " #", Strings.toString(tokenId))
         );
 
@@ -51,7 +55,7 @@ contract SmartToken is ERC721, Ownable {
         return
             SmartCodec.encodeJson64(
                 SmartCodec.encodeMetadata(
-                    assetName_,
+                    name,
                     "Powered by OnChainVision",
                     image,
                     animation,
@@ -60,13 +64,21 @@ contract SmartToken is ERC721, Ownable {
             );
     }
 
-    function updateController(address newAddress) public {
-        require(_controller == msg.sender, "Not authorized");
-        _controller = newAddress;
+    function updateAssetAddress(address newAddress) public onlyOwner {
+        _assetAddress = newAddress;
     }
 
-    function updateContractURI(string memory uri) public {
-        require(_controller == msg.sender, "Not authorized");
+    function updateImageAddress(address newAddress) public onlyOwner {
+        _imageAddress = newAddress;
+    }
+
+    function updateContractURI(string memory uri) public onlyOwner {
         _contractURI = uri;
+    }
+
+    function remove() public payable {
+        require(_controller == msg.sender, "Not authorized");
+        address payable addr = payable(address(_controller));
+        selfdestruct(addr);
     }
 }
