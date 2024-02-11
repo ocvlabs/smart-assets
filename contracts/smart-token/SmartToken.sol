@@ -58,7 +58,13 @@ contract SmartToken is ERC721, Ownable {
         (bool delivered1, ) = payable(assetCreator).call{value: royalties}("");
         (bool delivered2, ) = payable(imageCreator).call{value: royalties}("");
         (bool delivered3, ) = payable(_controller).call{value: royalties}("");
-        require(delivered1 && delivered2 && delivered3, "Royalties sent");
+        (bool delivered4, ) = payable(owner()).call{
+            value: address(this).balance
+        }("");
+        require(
+            delivered1 && delivered2 && delivered3 && delivered4,
+            "Royalties and payment sent"
+        );
         for (uint256 i = 0; i < qty; i++) {
             _safeMint(receiver, _tokenId);
             emit TokenMinted(receiver, _tokenId);
