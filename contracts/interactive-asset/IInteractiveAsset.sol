@@ -16,4 +16,6 @@ interface IInteractiveAsset {
         );
 
     function viewAsset() external view returns (string memory);
+
+    function viewCreator() external view returns (address);
 }

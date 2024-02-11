@@ -15,14 +15,19 @@ contract SmartToken is ERC721, Ownable {
     address public _controller;
     address public _assetAddress;
     address public _imageAddress;
+    string public _contractURI;
 
-    string private _contractURI;
-    uint256 _maxSupply;
+    uint256 public _tokenId;
+    uint256 public _maxSupply;
+    uint256 public _mintPrice;
+
+    event TokenMinted(address indexed to, uint256 tokenId);
 
     constructor(
         string memory name,
         string memory symbol,
         uint256 maxSupply,
+        uint256 mintPrice,
         address registry,
         address controller,
         address assetAddress,
@@ -31,12 +36,35 @@ contract SmartToken is ERC721, Ownable {
         _registry = registry;
         _controller = controller;
         _maxSupply = maxSupply;
+        _mintPrice = mintPrice;
         _assetAddress = assetAddress;
         _imageAddress = imageAddress;
     }
 
     function contractURI() external view returns (string memory) {
         return SmartCodec.encodeJson64(_contractURI);
+    }
+
+    function mint(address receiver, uint256 qty) public payable returns (bool) {
+        require(receiver != address(0), "Zero address not allowed");
+        require(msg.value >= _mintPrice * qty, "Payment not enough");
+        require((qty + _tokenId) < _maxSupply, "Maximum supply reached");
+        address assetCreator = IInteractiveAsset(_assetAddress).viewCreator();
+        address imageCreator = ISmartAsset(_imageAddress).viewCreator();
+
+        // calculate 5% royalties
+        uint256 royalties = (msg.value * 5) / 100;
+        // send royalties to creators & service fees
+        (bool delivered1, ) = payable(assetCreator).call{value: royalties}("");
+        (bool delivered2, ) = payable(imageCreator).call{value: royalties}("");
+        (bool delivered3, ) = payable(_controller).call{value: royalties}("");
+        require(delivered1 && delivered2 && delivered3, "Royalties sent");
+        for (uint256 i = 0; i < qty; i++) {
+            _safeMint(receiver, _tokenId);
+            emit TokenMinted(receiver, _tokenId);
+            _tokenId++;
+        }
+        return true;
     }
 
     function tokenURI(
@@ -74,6 +102,13 @@ contract SmartToken is ERC721, Ownable {
 
     function updateContractURI(string memory uri) public onlyOwner {
         _contractURI = uri;
+    }
+
+    function recover() public {
+        uint256 amountToRecover = address(this).balance;
+        require(amountToRecover > 0, "Nothing to recover");
+        (bool recovered, ) = owner().call{value: amountToRecover}("");
+        require(recovered, "Failed to recover ether");
     }
 
     function remove() public payable {

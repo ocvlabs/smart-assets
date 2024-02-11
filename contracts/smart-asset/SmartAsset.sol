@@ -9,6 +9,7 @@ import {ISmartAsset} from "./ISmartAsset.sol";
 
 contract SmartAsset is ISmartAsset, Ownable {
     address public _registry;
+    address public _creator;
 
     string private _name;
     string private _data;
@@ -25,6 +26,7 @@ contract SmartAsset is ISmartAsset, Ownable {
         bool isEncoded
     ) Ownable(creator) {
         _registry = registry;
+        _creator = creator;
         if (isEncoded) {
             _setup(assetName, assetData, assetType);
         } else {
@@ -58,8 +60,12 @@ contract SmartAsset is ISmartAsset, Ownable {
         return _name;
     }
 
-    function viewRegistry() public view returns (address) {
+    function viewRegistry() external view returns (address) {
         return _registry;
+    }
+
+    function viewCreator() external view returns (address) {
+        return _creator;
     }
 
     function update(

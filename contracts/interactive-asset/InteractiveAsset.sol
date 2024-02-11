@@ -67,4 +67,8 @@ contract InteractiveAsset is IInteractiveAsset, Ownable {
 
         return markup;
     }
+
+    function viewCreator() external view returns (address) {
+        return _creatorAddress;
+    }
 }

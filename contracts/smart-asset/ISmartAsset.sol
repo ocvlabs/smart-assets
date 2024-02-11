@@ -17,4 +17,6 @@ interface ISmartAsset {
     function viewAsset() external view returns (string memory);
 
     function viewType() external view returns (string memory);
+
+    function viewCreator() external view returns (address);
 }
