@@ -54,11 +54,14 @@ contract SmartToken is ERC721, Ownable {
         require(receiver != address(0), "Zero address not allowed");
         require(msg.value >= _mintPrice * qty, "Payment not enough");
         require((qty + _tokenId) < _maxSupply, "Maximum supply reached");
+
+        // retrieve asset creator addresses
         address assetCreator = IInteractiveAsset(_assetAddress).viewCreator();
         address imageCreator = ISmartAsset(_imageAddress).viewCreator();
 
         // calculate 5% royalties
         uint256 royalties = (msg.value * 5) / 100;
+
         // send royalties to creators & service fees
         (bool delivered1, ) = payable(assetCreator).call{value: royalties}("");
         (bool delivered2, ) = payable(imageCreator).call{value: royalties}("");
@@ -66,15 +69,19 @@ contract SmartToken is ERC721, Ownable {
         (bool delivered4, ) = payable(owner()).call{
             value: address(this).balance
         }("");
+
         require(
             delivered1 && delivered2 && delivered3 && delivered4,
             "Royalties and payment sent"
         );
+
+        // mint tokens
         for (uint256 i = 0; i < qty; i++) {
             _tokenId++;
             _safeMint(receiver, _tokenId);
             emit TokenMinted(receiver, _tokenId);
         }
+
         return true;
     }
 
@@ -99,28 +106,39 @@ contract SmartToken is ERC721, Ownable {
             );
     }
 
-    function updateAssetAddress(address newAddress) public onlyOwner {
+    function updateAssetAddress(address newAddress) external onlyOwner {
         _assetAddress = newAddress;
     }
 
-    function updateImageAddress(address newAddress) public onlyOwner {
+    function updateImageAddress(address newAddress) external onlyOwner {
         _imageAddress = newAddress;
     }
 
-    function updateContractURI(string memory uri) public onlyOwner {
+    function updateContractURI(string memory uri) external onlyOwner {
         _contractURI = uri;
     }
 
     function recover() public {
-        uint256 amountToRecover = address(this).balance;
-        require(amountToRecover > 0, "Nothing to recover");
-        (bool recovered, ) = owner().call{value: amountToRecover}("");
+        (bool recovered, ) = payable(_controller).call{
+            value: address(this).balance
+        }("");
         require(recovered, "Failed to recover ether");
     }
 
-    function remove() public payable {
-        require(_controller == msg.sender, "Not authorized");
-        address payable addr = payable(address(_controller));
-        selfdestruct(addr);
+    receive() external payable {
+        recover();
+        if (msg.value >= _mintPrice) {
+            bool minted = mint(msg.sender, 1);
+            if (!minted) {
+                // if not minted return the payment
+                (bool recovered, ) = payable(msg.sender).call{value: msg.value}(
+                    ""
+                );
+                require(recovered, "Failed to recover ether");
+            }
+        } else {
+            (bool recovered, ) = payable(msg.sender).call{value: msg.value}("");
+            require(recovered, "Failed to recover ether");
+        }
     }
 }
