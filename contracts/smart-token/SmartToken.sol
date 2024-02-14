@@ -128,17 +128,21 @@ contract SmartToken is ERC721, Ownable {
     receive() external payable {
         recover();
         if (msg.value >= _mintPrice) {
-            bool minted = mint(msg.sender, 1);
+            (bool minted, ) = payable(address(this)).call{value: msg.value}(
+                abi.encodeWithSignature("mint(address,uint256)", msg.sender, 1)
+            );
+
             if (!minted) {
-                // if not minted return the payment
+                // recover payment if not minted
                 (bool recovered, ) = payable(msg.sender).call{value: msg.value}(
                     ""
                 );
-                require(recovered, "Failed to recover ether");
+                require(recovered, "Failed to recover");
             }
         } else {
+            // recover payment if payment not enough
             (bool recovered, ) = payable(msg.sender).call{value: msg.value}("");
-            require(recovered, "Failed to recover ether");
+            require(recovered, "Failed to recover");
         }
     }
 }
