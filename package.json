@@ -1,6 +1,6 @@
 {
   "name": "@ocvlabs/smart-assets",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "description": "Solidity Contract for Creating \"Digital Asset as a Smart Contract\"",
   "publishConfig": {
     "access": "public",
@@ -38,6 +38,7 @@
     "chai": "^4.2.0",
     "ethers": "^6.7.1",
     "hardhat": "^2.17.4",
+    "hardhat-contract-sizer": "^2.10.0",
     "hardhat-gas-reporter": "^1.0.9",
     "hardhat-ignore-warnings": "^0.2.0"
   },
