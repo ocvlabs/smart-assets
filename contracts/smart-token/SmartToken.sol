@@ -5,7 +5,7 @@ import {IInteractiveAsset} from "../interactive-asset/IInteractiveAsset.sol";
 import {ISmartAsset} from "../smart-asset/ISmartAsset.sol";
 import {SmartCodec} from "../smart-codec/SmartCodec.sol";
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Ownable} from "./Ownable.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
 pragma solidity 0.8.19;

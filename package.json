@@ -1,6 +1,6 @@
 {
   "name": "@ocvlabs/smart-assets",
-  "version": "0.0.24",
+  "version": "0.0.27",
   "description": "Solidity Contract for Creating \"Digital Asset as a Smart Contract\"",
   "publishConfig": {
     "access": "public",
@@ -43,6 +43,6 @@
     "hardhat-ignore-warnings": "^0.2.0"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^5.0.1"
+    "@openzeppelin/contracts": "4.9.6"
   }
 }

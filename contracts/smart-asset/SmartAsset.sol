@@ -3,7 +3,7 @@
 
 pragma solidity ^0.8.19;
 
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Ownable} from "../smart-token/Ownable.sol";
 import {SmartCodec} from "../smart-codec/SmartCodec.sol";
 import {ISmartAsset} from "./ISmartAsset.sol";
 

@@ -3,7 +3,7 @@
 pragma solidity ^0.8.19;
 
 import {IMembership} from "./IMembership.sol";
-import {ERC20Recoverable} from "../smart-pricer/ERC20Recoverable.sol";
+import {ERC20Recoverable} from "../smart-token/ERC20Recoverable.sol";
 
 contract ProPlan is IMembership, ERC20Recoverable {
     address payable private treasury;

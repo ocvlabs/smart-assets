@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: MIT
 pragma solidity >=0.8.17 <0.9.0;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+import {Ownable} from "./Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /**
@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
  */
 
 contract ERC20Recoverable is Ownable(msg.sender) {
-    /**
+    /** 
     @notice Recover ERC20 tokens sent to the contract by mistake.
     @dev The contract is Ownable and only the owner can call the recover function.
     @param _to The address to send the tokens to.
