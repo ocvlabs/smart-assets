@@ -3,8 +3,9 @@
 pragma solidity ^0.8.20;
 
 import {IMembership} from "./IMembership.sol";
+import {ERC20Recoverable} from "../smart-pricer/ERC20Recoverable.sol";
 
-contract ProPlan is IMembership {
+contract ProPlan is IMembership, ERC20Recoverable {
     address payable private treasury;
 
     uint256 public _membershipFee; // @note monthly payment
@@ -37,10 +38,11 @@ contract ProPlan is IMembership {
 
     function subscribe(
         address user
-    ) external payable noActiveSubscription(user) {
+    ) external payable noActiveSubscription(user) returns (bool) {
         require(msg.value >= _membershipFee, "Payment not enough");
         _subscriptionTime[user] = block.timestamp;
         _subscribers[user] = true;
+        return true;
     }
 
     function setPrice(uint256 priceInWei) public onlyTreasury {
@@ -105,16 +107,5 @@ contract ProPlan is IMembership {
         }
 
         return 0;
-    }
-
-    function recover() public {
-        uint256 amountToRecover = address(this).balance;
-        require(amountToRecover > 0, "Nothing to recover");
-        (bool recovered, ) = treasury.call{value: amountToRecover}("");
-        require(recovered, "Failed to recover ether");
-    }
-
-    receive() external payable {
-        recover();
     }
 }

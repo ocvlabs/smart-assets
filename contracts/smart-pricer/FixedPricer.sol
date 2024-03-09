@@ -12,8 +12,7 @@ contract FixedPricer is IPricer {
     }
 
     function price(
-        bytes32,
-        string calldata,
+        address,
         uint256
     ) public view virtual returns (address tokenAddress, uint256 fee) {
         fee = _fee;
