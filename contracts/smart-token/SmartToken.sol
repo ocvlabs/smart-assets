@@ -8,7 +8,7 @@ import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
-pragma solidity 0.8.20;
+pragma solidity 0.8.19;
 
 contract SmartToken is ERC721, Ownable {
     address public _registry;

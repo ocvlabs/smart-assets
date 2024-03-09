@@ -5,7 +5,7 @@ import {IMembership} from "../smart-pricer/IMembership.sol";
 import {SmartAsset, ISmartAsset} from "../smart-assets/contracts/smart-asset/SmartAsset.sol";
 import {InteractiveAsset, IInteractiveAsset} from "../smart-assets/contracts/interactive-asset/InteractiveAsset.sol";
 
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.19;
 
 /// @title Asset Builder and Deployer for Smart Assets
 /// @author raldblox | rald@ocvlabs.com

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // OnChainVision Contracts
 
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.19;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {SmartCodec} from "../smart-codec/SmartCodec.sol";

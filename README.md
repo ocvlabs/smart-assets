@@ -17,7 +17,7 @@ npm install @ocvlabs/smart-assets
 Once installed, you can use the contracts by importing them and play around with your smart-asset:
 
 ```solidity
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.19;
 
 import {SmartAsset, ISmartAsset} from "@ocvlabs/smart-assets/contracts/smart-asset/SmartAsset.sol";
 
