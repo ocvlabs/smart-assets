@@ -1,6 +1,6 @@
 {
   "name": "@ocvlabs/smart-assets",
-  "version": "0.0.23",
+  "version": "0.0.24",
   "description": "Solidity Contract for Creating \"Digital Asset as a Smart Contract\"",
   "publishConfig": {
     "access": "public",
